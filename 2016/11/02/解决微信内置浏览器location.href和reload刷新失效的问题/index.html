@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>解决微信内置浏览器location.href和reload刷新失效的问题 | Good to Great</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="location.reload()和location.href是常用的刷新页面的方法，但是在Android微信内置浏览器中就失效了。">
+<meta name="keywords" content="微信,微信内置浏览器,刷新,location.reload,location.href">
+<meta property="og:type" content="article">
+<meta property="og:title" content="解决微信内置浏览器location.href和reload刷新失效的问题">
+<meta property="og:url" content="https://StephenKingg.github.io/2016/11/02/解决微信内置浏览器location.href和reload刷新失效的问题/index.html">
+<meta property="og:site_name" content="Good to Great">
+<meta property="og:description" content="location.reload()和location.href是常用的刷新页面的方法，但是在Android微信内置浏览器中就失效了。">
+<meta property="og:updated_time" content="2017-04-17T15:21:33.193Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="解决微信内置浏览器location.href和reload刷新失效的问题">
+<meta name="twitter:description" content="location.reload()和location.href是常用的刷新页面的方法，但是在Android微信内置浏览器中就失效了。">
+  
+    <link rel="alternate" href="/atom.xml" title="Good to Great" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="http://r.loli.io/y2qU3y.ico">
+  
+  
+    
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+<!-- Google Analytics -->
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-97381807-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+<!-- End Google Analytics -->
+
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    
+    <div id="header-inner" class="inner">
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="搜索"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://StephenKingg.github.io"></form>
+      </div>
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">首页</a>
+        
+          <a class="main-nav-link" href="/archives">归档</a>
+        
+          <a class="main-nav-link" href="/about">关于</a>
+        
+      </nav>
+      
+    </div>
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Good to Great</a>
+      </h1>
+      
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-解决微信内置浏览器location.href和reload刷新失效的问题" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/11/02/解决微信内置浏览器location.href和reload刷新失效的问题/" class="article-date">
+  <time datetime="2016-11-02T07:30:28.000Z" itemprop="datePublished">2016-11-02</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      解决微信内置浏览器location.href和reload刷新失效的问题
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <!-- Table of Contents -->
+        
+        <p><code>location.reload()</code>和<code>location.href</code>是常用的刷新页面的方法，但是在Android微信内置浏览器中就失效了。<br><a id="more"></a><br>当我们想通过点击页面中的一个按钮或者链接来刷新页面时，我们通常会用<code>location.reload()</code>或者<code>location.href = &#39;current url&#39;</code>来实现页面刷新。但是此方法在Android微信内置浏览器中会失效，而在其他浏览器（不管是PC还是mobile）以及iOS微信内置浏览器中都没有这个问题，初步推断是Android微信内置浏览器缓存了当前页面的URL。</p>
+<p>为了解决此类问题，我们可以在URL中添加时间戳或者随机数。由于只有Android微信内置浏览器才有这个BUG，我们先要判断当前打开页面的浏览器是否为Android微信内置浏览器。如果是，再向URL中添加时间戳或随机数。</p>
+<p>在这里，我用添加时间戳的方式来实现：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">isAndroidWechat</span>(<span class="params"></span>) </span>&#123;</div><div class="line"></div><div class="line">  <span class="comment">// 第一个条件用来判断是否为Android系统，第二个用来判断是否为微信</span></div><div class="line">  <span class="keyword">return</span> (<span class="regexp">/android/</span>.test(navigator.userAgent.toLowerCase()) &amp;&amp;</div><div class="line">    <span class="regexp">/micromessenger/</span>.test(navigator.userAgent.toLowerCase()));</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">updateURL</span>(<span class="params">url, args, hash</span>) </span>&#123;</div><div class="line"></div><div class="line">  <span class="comment">// 时间戳参数，默认是"t"</span></div><div class="line">  <span class="keyword">let</span> key = (args || <span class="string">'t'</span>) + <span class="string">'='</span>;</div><div class="line"></div><div class="line">  <span class="comment">/**</span></div><div class="line">   * 如果使用路由（比如react-router）跳转并刷新，</div><div class="line">   * 则需要将目标hash也传递过来（比如event.currentTarget.hash），</div><div class="line">   * 一般用不到这个参数，可直接省略</div><div class="line">   */</div><div class="line">  <span class="keyword">let</span> router = hash || location.hash;</div><div class="line"></div><div class="line">  <span class="comment">// 匹配规则</span></div><div class="line">  <span class="keyword">const</span> reg = <span class="keyword">new</span> <span class="built_in">RegExp</span>(key + <span class="string">'\\d+'</span>);</div><div class="line"></div><div class="line">  <span class="comment">// 获取当前时间</span></div><div class="line">  <span class="keyword">let</span> timestamp = +<span class="keyword">new</span> <span class="built_in">Date</span>();</div><div class="line"></div><div class="line">  <span class="keyword">if</span> (url.indexOf(key) &gt; <span class="number">-1</span>) &#123;</div><div class="line"></div><div class="line">    <span class="comment">// 如果有时间戳，则直接更新</span></div><div class="line">    <span class="keyword">return</span> url.replace(reg, key + timestamp);</div><div class="line"></div><div class="line">  &#125; <span class="keyword">else</span> &#123;</div><div class="line"></div><div class="line">    <span class="comment">// 如果没有时间戳，则加上时间戳</span></div><div class="line">    <span class="keyword">if</span> (url.indexOf(<span class="string">'\?'</span>) &gt; <span class="number">-1</span>) &#123;</div><div class="line">      <span class="keyword">let</span> urlArr = url.split(<span class="string">'\?'</span>);</div><div class="line"></div><div class="line">      <span class="keyword">if</span> (urlArr[<span class="number">1</span>]) &#123;</div><div class="line">        <span class="keyword">return</span> urlArr[<span class="number">0</span>] + <span class="string">'?'</span> + key + timestamp + <span class="string">'&amp;'</span> + urlArr[<span class="number">1</span>];</div><div class="line">      &#125; <span class="keyword">else</span> &#123;</div><div class="line">        <span class="keyword">return</span> urlArr[<span class="number">0</span>] + <span class="string">'?'</span> + key + timestamp;</div><div class="line">      &#125;</div><div class="line">    &#125; <span class="keyword">else</span> &#123;</div><div class="line"></div><div class="line">      <span class="comment">// 使用hash路由的情况</span></div><div class="line">      <span class="keyword">if</span> (url.indexOf(<span class="string">'#'</span>) &gt; <span class="number">-1</span>) &#123;</div><div class="line">        <span class="keyword">return</span> url.split(<span class="string">'#'</span>)[<span class="number">0</span>] + <span class="string">'?'</span> + key + timestamp + router;</div><div class="line">      &#125; <span class="keyword">else</span> &#123;</div><div class="line">        <span class="keyword">return</span> url + <span class="string">'?'</span> + key + timestamp;</div><div class="line">      &#125;</div><div class="line">    &#125;</div><div class="line">  &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">reloadPage</span>(<span class="params"></span>) </span>&#123;</div><div class="line"></div><div class="line">  <span class="keyword">if</span> (isAndroidWechat()) &#123;</div><div class="line"></div><div class="line">    <span class="comment">// 先添加时间戳</span></div><div class="line">    location.href = updateURL(location.href);</div><div class="line"></div><div class="line">    <span class="comment">// 然后强制刷新</span></div><div class="line">    location.reload(<span class="literal">true</span>);</div><div class="line">  &#125; <span class="keyword">else</span> &#123;</div><div class="line"></div><div class="line">    <span class="comment">// 直接强制刷新</span></div><div class="line">    location.reload(<span class="literal">true</span>);</div><div class="line">  &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line"></div><div class="line"><span class="comment">/**</span></div><div class="line"> * 当使用react-router路由跳转到子页面时，</div><div class="line"> * 或者类似的跳转需要重新刷新页面来达到重新渲染组件的目的，</div><div class="line"> * 也需要添加时间戳或随机数。</div><div class="line"> *</div><div class="line"> * 由于该问题是react-router引起的，</div><div class="line"> * 与Android微信内置浏览器URL缓存类似，</div><div class="line"> * 所以也可以用这个方法</div><div class="line"> *</div><div class="line"> * 这个问题大家可以忽略，只使用上面的reloadPage即可</div><div class="line">    function reloadPage(event) &#123;</div><div class="line">      // 阻止默认行为</div><div class="line">      event.preventDefault();</div><div class="line"></div><div class="line">      // 先添加时间戳</div><div class="line">      location.href = updateURL(location.href);</div><div class="line"></div><div class="line">      // 然后强制刷新</div><div class="line">      location.reload(true);</div><div class="line">    &#125;</div><div class="line"> */</div></pre></td></tr></table></figure>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://StephenKingg.github.io/2016/11/02/解决微信内置浏览器location.href和reload刷新失效的问题/" data-id="cj245e5g70007ucw0blk29pt0" class="article-share-link">分享</a>
+      
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/location-href/">location.href</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/location-reload/">location.reload</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/刷新/">刷新</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/微信/">微信</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/微信内置浏览器/">微信内置浏览器</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2016/10/27/web-font/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">上一篇</strong>
+      <div class="article-nav-title">
+        
+          网页设计中的字体设定
+        
+      </div>
+    </a>
+  
+  
+</nav>
+
+  
+</article>
+ 
+     
+  <div class="comments" id="comments">
+    
+     
+       
+  </div>
+ 
+  
+
+</section>
+           
+    <aside id="sidebar">
+  
+    
+
+  
+    
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title recent-posts">最新文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2016/11/02/解决微信内置浏览器location.href和reload刷新失效的问题/">解决微信内置浏览器location.href和reload刷新失效的问题</a>
+          </li>
+        
+          <li>
+            <a href="/2016/10/27/web-font/">网页设计中的字体设定</a>
+          </li>
+        
+          <li>
+            <a href="/2016/05/24/How-to-integrate-Sublime-Text-3-with-Git-and-GitHub/">How to integrate Sublime Text 3 with Git and GitHub</a>
+          </li>
+        
+          <li>
+            <a href="/2016/05/24/使用Hexo和GitHub-Pages搭建个人博客/">使用Hexo和GitHub Pages搭建个人博客</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+    
+
+  
+    
+  
+</aside>
+
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-left">
+      &copy; 2014 - 2017 Stephen King&nbsp;|&nbsp;
+      主题 <a href="https://github.com/giscafer/hexo-theme-cafe/" target="_blank">Cafe</a>
+    </div>
+     <div id="footer-right">
+      联系方式&nbsp;|&nbsp;kingze1992@gmail.com
+    </div>
+  </div>
+</footer>
+ <script src="/jquery/jquery.min.js"></script>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">首页</a>
+  
+    <a href="/archives" class="mobile-nav-link">归档</a>
+  
+    <a href="/about" class="mobile-nav-link">关于</a>
+  
+</nav>
+    <img class="back-to-top-btn" src="/images/fly-to-top.png"/>
+<script>
+// Elevator script included on the page, already.
+window.onload = function() {
+  var elevator = new Elevator({
+    selector:'.back-to-top-btn',
+    element: document.querySelector('.back-to-top-btn'),
+    duration: 1000 // milliseconds
+  });
+}
+</script>
+      
+
+  
+
+  
+
+
+
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      })
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      })
+    </script>
+    <script type="text/javascript" src="//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  
+
+
+ <script src="/js/is.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+<script src="/js/elevator.js"></script>
+  </div>
+</body>
+</html>
